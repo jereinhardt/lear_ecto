@@ -1,6 +1,8 @@
 defmodule LearEcto.MixProject do
   use Mix.Project
 
+  @db_envs [:dev, :test]
+
   def project do
     [
       app: :lear_ecto,
@@ -14,7 +16,8 @@ defmodule LearEcto.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: mod(Mix.env)
     ]
   end
 
@@ -22,11 +25,17 @@ defmodule LearEcto.MixProject do
     [
       {:lear, path: "../lear"},
       {:ecto, "~> 3.3"},
-      {:ecto_sql, "~> 3.0", only: [:dev, :test]},
-      {:postgrex, ">= 0.0.0", only: [:dev, :test]}
+      {:ecto_sql, "~> 3.0", only: @db_envs},
+      {:postgrex, ">= 0.0.0", only: @db_envs},
+      {:jason, "~> 1.1", only: @db_envs}
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_),     do: ["lib"]
+  defp elixirc_paths(env) when env in @db_envs, do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp mod(env) when env in @db_envs do
+    {LearEcto.TestApplication, []}
+  end
+  defp mod(_), do: []
 end
